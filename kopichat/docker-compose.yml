@@ -1,13 +1,37 @@
 services:
   db:
-    image: mysql:8
+    image: mysql:8.0.42
     restart: always
-    volumes:
-      - db-data:/var/lib/mysql
     environment:
       - MYSQL_DATABASE=kopichat
-      - MYSQL_ROOT_PASSWORD= password
+      - MYSQL_ROOT_PASSWORD=password
     ports:
       - "3306:3306"
+    volumes:
+      - ./migrations:/docker-entrypoint-initdb.d:z
+      - db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -ppassword --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  chatbot:
+    image: kopichatjag-bot:local
+    restart: always
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=password
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=kopichat
+      - OENAI_API_URI=https://api.openai.com/v1
+      - OENAI_API_KEY=${OPENAI_API_KEY}
+      - OENAI_MODEL=gpt-4.1-mini
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "9000:8080"
+    entrypoint: ["/usr/local/bin/aws-lambda-rie", "./main"]
 volumes:
-  db-data:
+  db:

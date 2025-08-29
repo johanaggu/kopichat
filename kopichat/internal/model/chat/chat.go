@@ -1,9 +1,9 @@
 package chat
 
-// NewChat creates a new Chat entity with the given id and externalID.
-func NewChat(id, externalID string) *Chat {
+// New creates a new Chat entity with the given id and externalID.
+func New(id, externalID string) *Chat {
 	return &Chat{
-		id:     id,
+		id:         id,
 		externalID: externalID,
 	}
 }

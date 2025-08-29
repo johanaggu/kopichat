@@ -1,6 +1,8 @@
-CREATE TABLE chats (
-  id    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  api_id VARCHAR(255) NOT NULL,
+
+
+CREATE TABLE IF NOT EXISTS chats (
+  `id`     			CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  `external_id`  	VARCHAR(255) NULL,
+  `created_at`  	TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_chats_api_id ON chats (api_id);
