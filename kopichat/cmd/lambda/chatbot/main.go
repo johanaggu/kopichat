@@ -16,23 +16,33 @@ import (
 )
 
 func main() {
+	userDB := os.Getenv("MYSQL_USER")
+	passDB := os.Getenv("MYSQL_PASSWORD")
+	hostDB := os.Getenv("MYSQL_HOST")
+	portDB := os.Getenv("MYSQL_PORT")
+	nameDB := os.Getenv("MYSQL_DATABASE")
+
+	openaiAPIURI := os.Getenv("OPENAI_API_URI")
+	openaiAPIKey := os.Getenv("OPENAI_API_KEY")
+	openaiModel := os.Getenv("OPENAI_MODEL")
 	ctx := context.Background()
 	conn, err := db.NewConn(ctx, db.Conf{
-		User: os.Getenv("MYSQL_USER"),
-		Pass: os.Getenv("MYSQL_PASSWORD"),
-		Host: os.Getenv("MYSQL_HOST"),
-		Port: os.Getenv("MYSQL_PORT"),
-		Name: os.Getenv("MYSQL_DATABASE"),
+		User: userDB,
+		Pass: passDB,
+		Host: hostDB,
+		Port: portDB,
+		Name: nameDB,
 	})
 	if err != nil {
-		log.Println(err.Error(), os.Getenv("MYSQL_HOST"))
+		log.Println("error connecting with mysql")
 		os.Exit(1)
 
 	}
 
 	httpClient := &http.Client{}
-	instructions := ""
-	openaiCli := openai.NewClient(httpClient, os.Getenv("OENAI_API_URI"), os.Getenv("OENAI_API_KEY"), os.Getenv("OENAI_MODEL"), instructions)
+	instructions := `
+	`
+	openaiCli := openai.NewClient(httpClient, openaiAPIURI, openaiAPIKey, openaiModel, instructions)
 
 	chatbotClient := chatbot.New(conn, conn, openaiCli)
 	h := handlers.New(chatbotClient)

@@ -1,0 +1,23 @@
+services:
+  dbtest:
+    image: mysql:8.0.42
+    restart: always
+    environment:
+      - MYSQL_DATABASE=database
+      - MYSQL_ROOT_PASSWORD=password
+    volumes:
+      - ./migrations:/docker-entrypoint-initdb.d:z
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -ppassword --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  test:
+    image: golang:1.24-bookworm
+    working_dir: /src
+    entrypoint: ["/usr/local/go/bin/go"] 
+    command: go mod tidy
+    environment:
+      CGO_ENABLED: "0"
+    volumes:
+      - .:/src:rw           
