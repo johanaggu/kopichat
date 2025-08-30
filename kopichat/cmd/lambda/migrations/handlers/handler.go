@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"os"
 
@@ -10,28 +9,45 @@ import (
 	db "github.com/johanaggu/kopichat/internal/infrastructure/mysql"
 )
 
-var schema = `
-	CREATE TABLE IF NOT EXISTS chats(   
-		id    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,   
-		api_id VARCHAR(255) NOT NULL 
+// Actions:
+//  - "reset-db"         -> DROP/CREATE database (uses MYSQL_DATABASE)
+//  - "create-chats"     -> create chats table
+//  - "create-messages"  -> create messages table
+//  - "create-index"     -> create index on messages(chat_id)
+//  - "migrate"          -> create chats + messages + index
+
+const resetDB = `
+	DROP TABLE IF EXISTS chats;
+	DROP TABLE IF EXISTS messages;
+`
+
+var chatsTable = `
+	CREATE TABLE IF NOT EXISTS chats (
+  		id     			CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+  		external_id  	VARCHAR(255) NULL,
+  		created_at  	TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);
 `
+var messageTable = `
+	CREATE TABLE messages (
+  		id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  		chat_id         CHAR(36) NOT NULL,
+  		content         TEXT NOT NULL,
+  		role            VARCHAR(20) NOT NULL,
+  		created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  		CONSTRAINT fk_chat_messages FOREIGN KEY (chat_id)
+  		REFERENCES chats(id)
+  		ON DELETE CASCADE
+	);
+`
+
+var messageChatIDIndex = `CREATE INDEX idx_chat_messages ON messages(chat_id);`
 
 type Message struct {
 	Message string `json:"message"`
 }
 
 func Migrate(ctx context.Context) (Message, error) {
-	root, err := sql.Open("mysql",
-		fmt.Sprintf("%s:%s@tcp(%s:%s)/?parseTime=true&charset=utf8mb4,utf8",
-			os.Getenv("MYSQL_USER"), os.Getenv("MYSQL_PASSWORD"), os.Getenv("MYSQL_HOST"), os.Getenv("MYSQL_PORT")))
-	if err != nil {
-		return Message{
-			Message: "ailed to create db connection",
-		}, fmt.Errorf("failed to create db connection")
-	}
-	root.ExecContext(ctx, `CREATE DATABASE IF NOT EXISTS kopichat`)
-
 	conn, err := db.NewConn(ctx, db.Conf{
 		User: os.Getenv("MYSQL_USER"),
 		Pass: os.Getenv("MYSQL_PASSWORD"),
@@ -47,10 +63,24 @@ func Migrate(ctx context.Context) (Message, error) {
 
 	defer conn.Close()
 
-	if err := conn.RunMigrations(schema); err != nil {
-		return Message{
-			Message: "ailed to run migrations ",
-		}, fmt.Errorf("failed to run migrations ")
+	err = conn.RunMigrations(resetDB)
+	if err != nil {
+		return Message{}, fmt.Errorf("failed to reset db")
+	}
+
+	err = conn.RunMigrations(chatsTable)
+	if err != nil {
+		return Message{}, fmt.Errorf("failed to reset db")
+	}
+
+	err = conn.RunMigrations(messageTable)
+	if err != nil {
+		return Message{}, fmt.Errorf("failed to reset db")
+	}
+
+	err = conn.RunMigrations(messageChatIDIndex)
+	if err != nil {
+		return Message{}, fmt.Errorf("failed to reset db")
 	}
 
 	return Message{
