@@ -4,6 +4,20 @@
 help:
 	@echo "Hello code reviewer!"
 	@echo "Here are the possible commands with the make tool"
+	@echo ""
+	@echo "Available targets:"
+	@echo "  install  - Verify Docker CLI, Docker daemon, and Docker Compose v2 are available."
+	@echo "  test     - Run unit tests with coverage, print coverage summary, then tear down test services."
+	@echo "  run      - Build the chatbot image (buildx, linux/amd64) and start services with docker compose."
+	@echo "             Requires env vars: OPENAI_API_KEY"
+	@echo "  down     - Stop and remove services, networks, and volumes (removes orphans)."
+	@echo "  clean    - Alias for 'down'."
+	@echo ""
+	@echo "Developer tools:"
+	@echo "  tidy     - Run 'go mod tidy'."
+	@echo "  fmt      - Run 'go fmt ./...'."
+	@echo ""
+	@echo "Usage: make <target>    e.g., 'make test'"
 
 .PHONY:install
 install:
@@ -24,8 +38,9 @@ test:
 		
 .PHONY: run
 run:
+	@[ -n "$$OPENAI_API_KEY" ] || (echo 'OPENAI_API_KEY is required. Example: OPENAI_API_KEY=sk-xxx make run'; exit 1)
 	@docker buildx build --platform linux/amd64 --provenance=false -t kopichatjag-bot:local -f cmd/lambda/chatbot/Dockerfile .
-	@docker compose up -d
+	@docker compose up 
 	
 .PHONY: down
 down:
