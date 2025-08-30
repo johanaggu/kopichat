@@ -16,10 +16,9 @@ import (
 //  - "create-index"     -> create index on messages(chat_id)
 //  - "migrate"          -> create chats + messages + index
 
-const resetDB = `
-	DROP TABLE IF EXISTS chats;
-	DROP TABLE IF EXISTS messages;
-`
+const dropChatsTable = `DROP TABLE IF EXISTS chats;`
+const dropMessagesTable = `DROP TABLE IF EXISTS messages;`
+
 
 var chatsTable = `
 	CREATE TABLE IF NOT EXISTS chats (
@@ -63,7 +62,11 @@ func Migrate(ctx context.Context) (Message, error) {
 
 	defer conn.Close()
 
-	err = conn.RunMigrations(resetDB)
+	err = conn.RunMigrations(dropChatsTable)
+	if err != nil {
+		return Message{}, fmt.Errorf("failed to reset db")
+	}
+	err = conn.RunMigrations(dropMessagesTable)
 	if err != nil {
 		return Message{}, fmt.Errorf("failed to reset db")
 	}
