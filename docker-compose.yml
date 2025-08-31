@@ -19,6 +19,7 @@ services:
     image: kopichatjag-bot:local
     restart: always
     environment:
+      - ENVIRONMENT=local
       - MYSQL_USER=root
       - MYSQL_PASSWORD=password
       - MYSQL_HOST=db

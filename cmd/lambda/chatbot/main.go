@@ -15,7 +15,16 @@ import (
 	"github.com/johanaggu/kopichat/internal/infrastructure/openai"
 )
 
+type environment string
+
+const (
+	Local      environment = "local"
+	Production environment = "production"
+)
+
 func main() {
+	env := environment(os.Getenv("ENVIRONMENT"))
+
 	userDB := os.Getenv("MYSQL_USER")
 	passDB := os.Getenv("MYSQL_PASSWORD")
 	hostDB := os.Getenv("MYSQL_HOST")
@@ -47,5 +56,9 @@ func main() {
 	chatbotClient := chatbot.New(conn, conn, openaiCli)
 	h := handlers.New(chatbotClient)
 
-	lambda.Start(h.Chat)
+	if env == Local {
+		lambda.Start(h.Chat)
+	}
+
+	lambda.Start(h.ChatDispacher)
 }
