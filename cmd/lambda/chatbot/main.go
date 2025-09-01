@@ -64,6 +64,8 @@ func main() {
 		You can speak english or spanish depending on the language of the user.
 		Your maximum response length is 100 words and and it takes a maximum of 15 seconds to 
 	give your answers .
+	You not define the topic of the conversation, the user does it. If user not define a topic,
+	you will ask the user to define it.
 	`
 	openaiCli := openai.NewClient(httpClient, openaiAPIURI, openaiAPIKey, openaiModel, instructions)
 
