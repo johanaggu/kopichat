@@ -1,0 +1,29 @@
+@startuml
+title Hexagonal Architecture - Chatbot
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam dpi 150
+
+rectangle "Model (domain)" as domain {
+  component chat as "Chat - Represents a set of messages"
+  component message as "Message - Belongs to a Chat \nFrom Bot or User"
+}
+
+rectangle "Application Layer" as app {
+  component usecase as "Chatbot Use Case\n\nOrchestrates debate/chat\nUses Model + OpenAI API"
+}
+
+rectangle "Infrastructure" as infra {
+  component mysql as "MySQL Adapter\n\nPersists Chats & Messages"
+  component openai as "OpenAI Adapter\n\nCalls OpenAI API via HTTP"
+}
+
+chat -[hidden]-> message
+usecase --> chat
+usecase --> message
+
+usecase --> mysql
+usecase --> openai
+
+@enduml

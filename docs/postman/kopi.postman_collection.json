@@ -1,0 +1,73 @@
+{
+	"info": {
+		"_postman_id": "34ecb939-04d8-4d2a-aea1-dd63fa625e09",
+		"name": "kopi",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45471170"
+	},
+	"item": [
+		{
+			"name": "Remote",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"message\":\"hola\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://ujbmokldvh.execute-api.us-west-1.amazonaws.com/api/chat",
+					"protocol": "https",
+					"host": [
+						"ujbmokldvh",
+						"execute-api",
+						"us-west-1",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"api",
+						"chat"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Local",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"message\":\"hola\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:9000/2015-03-31/functions/function/invocations",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"2015-03-31",
+						"functions",
+						"function",
+						"invocations"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

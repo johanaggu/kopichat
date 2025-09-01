@@ -1,0 +1,47 @@
+
+@startuml
+' ===== Icons AWS desde el release v20.0 =====
+!define AWSPuml https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v20.0/dist
+!include AWSPuml/AWSCommon.puml
+!include AWSPuml/NetworkingContentDelivery/APIGateway.puml
+!include AWSPuml/Compute/Lambda.puml
+!include AWSPuml/Database/RDS.puml
+!include AWSPuml/NetworkingContentDelivery/VPCNATGateway.puml
+!include AWSPuml/NetworkingContentDelivery/VPCInternetGateway.puml
+
+skinparam shadowing false
+skinparam dpi 180
+left to right direction
+hide stereotype
+
+actor "Client" as user
+
+APIGateway(api, "API Gateway", "HTTP API")
+
+cloud openai as "OpenAI API\n(Internet)"
+
+rectangle "VPC (10.0.0.0/16)" {
+  rectangle "Public Subnet" as pubsub {
+   VPCInternetGateway(igw, "Internet Gateway", "")
+VPCNATGateway(nat, "NAT Gateway", "")
+    
+    
+  }
+  rectangle  "Private Subnet" as privsub {
+    Lambda(fn, "Lambda (Container Image)", "return conversation")
+RDS(db, "RDS MySQL", "save data")
+
+   }
+}
+
+' entry point
+user --> api : HTTPS
+api --> fn  : Invoke
+
+' db
+fn  --> db  : TCP 3306
+
+fn --> nat
+nat --> igw
+igw -> openai
+@enduml
